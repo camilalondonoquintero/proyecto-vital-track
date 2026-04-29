@@ -11,6 +11,7 @@ from flask import (
     url_for,
 )
 
+
 from app.extensions import db
 from app.models import Habit, HabitLog
 from app.services.habit_service import HabitService
