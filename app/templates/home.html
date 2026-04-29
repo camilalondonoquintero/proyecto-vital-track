@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}VitalTrack | Habitos saludables{% endblock %}
+
+{% block content %}
+<section class="landing-grid">
+    <article class="hero-panel">
+        <p class="eyebrow">Habitos saludables con seguimiento real</p>
+        <h2>Organiza tu rutina y registra tu progreso diario para construir constancia.</h2>
+        <p class="lead">
+            VitalTrack combina seguimiento diario, progreso visual y una experiencia simple para ayudarte a mejorar tu estilo de vida.
+        </p>
+
+        <div class="hero-stats">
+            <div>
+                <strong>Login</strong>
+                <span>Cuenta personal con sesion privada</span>
+            </div>
+            <div>
+                <strong>Habitos</strong>
+                <span>Control de agua, descanso, ejercicio y mas</span>
+            </div>
+            <div>
+                <strong>Progreso</strong>
+                <span>Rachas, avance y seguimiento personal</span>
+            </div>
+        </div>
+
+        <div class="feature-ribbon">
+            <span>Seguimiento diario</span>
+            <span>Rachas semanales</span>
+            <span>Tips saludables</span>
+            <span>Creación de habitos</span>
+        </div>
+    </article>
+
+    <aside class="auth-stack">
+        <article class="auth-card" id="login">
+            <div class="panel-head">
+                <p class="eyebrow">Acceso</p>
+                <h3>Iniciar sesion</h3>
+                <p>Entra a tu panel y continua tu seguimiento.</p>
+            </div>
+            <form class="form-grid single-column" method="post" action="{{ url_for('web.login') }}">
+                <label>
+                    Correo electronico
+                    <input type="email" name="email" placeholder="tu@correo.com" required>
+                </label>
+                <label>
+                    Contrasena
+                    <input type="password" name="password" placeholder="Minimo 6 caracteres" required>
+                </label>
+                <button type="submit">Entrar a mi cuenta</button>
+            </form>
+        </article>
+
+        <article class="auth-card accent-card" id="registro">
+            <div class="panel-head">
+                <p class="eyebrow">Registro</p>
+                <h3>Crear cuenta</h3>
+                <p>Registra tu perfil y empieza a construir tus habitos saludables.</p>
+            </div>
+            <form class="form-grid single-column" method="post" action="{{ url_for('web.register') }}">
+                <label>
+                    Nombre completo
+                    <input type="text" name="full_name" placeholder="Cami Londoño" required>
+                </label>
+                <label>
+                    Correo electronico
+                    <input type="email" name="email" placeholder="cami@email.com" required>
+                </label>
+                <label>
+                    Edad
+                    <input type="number" name="age" min="1" placeholder="21" required>
+                </label>
+                <label>
+                    Objetivo de bienestar
+                    <input type="text" name="wellness_goal" placeholder="Dormir mejor, bajar estres y entrenar mas" required>
+                </label>
+                <label>
+                    Contrasena
+                    <input type="password" name="password" placeholder="Minimo 6 caracteres" required>
+                </label>
+                <label>
+                    Confirmar contrasena
+                    <input type="password" name="confirm_password" placeholder="Repite tu contrasena" required>
+                </label>
+                <button type="submit">Crear cuenta y entrar</button>
+            </form>
+        </article>
+    </aside>
+</section>
+{% endblock %}

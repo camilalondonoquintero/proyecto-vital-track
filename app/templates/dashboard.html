@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Mi panel | VitalTrack{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero">
+    <div class="hero-copy">
+        <p class="eyebrow">Panel personal</p>
+        <h2>{{ user.first_name }}, este es tu espacio para construir constancia.</h2>
+        <p class="lead">
+            Registra tus habitos, controla tu avance diario y mantente enfocado en tu objetivo actual:
+            <strong>{{ user.wellness_goal }}</strong>.
+        </p>
+    </div>
+    <div class="hero-badge-card">
+        <span class="mini-label">Meta personal</span>
+        <strong>{{ user.wellness_goal }}</strong>
+        <p>Tu panel resume el avance de tus habitos y te ayuda a sostener la rutina.</p>
+    </div>
+</section>
+
+<section class="tip-section">
+    <article class="panel panel-highlight">
+        <div class="panel-head">
+            <p class="eyebrow">Tip saludable del día</p>
+            <h3>{{ tip_saludable }}</h3>
+        </div>
+    </article>
+</section>
+
+<section class="grid-summary">
+    <article class="summary-card warm">
+        <span>Habitos activos</span>
+        <strong>{{ summary.habits }}</strong>
+    </article>
+    <article class="summary-card teal">
+        <span>Cumplidos hoy</span>
+        <strong>{{ summary.completed_today }}</strong>
+    </article>
+    <article class="summary-card deep">
+        <span>Promedio actual</span>
+        <strong>{{ summary.average_progress }}%</strong>
+    </article>
+    <article class="summary-card gold">
+        <span>Rachas en marcha</span>
+        <strong>{{ summary.active_streaks }}</strong>
+    </article>
+</section>
+
+<section class="dashboard-layout">
+    <div class="dashboard-main">
+        <article class="panel panel-highlight">
+            <div class="panel-head">
+                <p class="eyebrow">Nuevo habito</p>
+                <h3>Crea una meta diaria</h3>
+                <p>Ejemplos: tomar 8 vasos de agua, caminar 30 minutos o dormir 8 horas.</p>
+            </div>
+            <form class="form-grid" method="post" action="{{ url_for('web.create_habit') }}">
+                <label>
+                    Titulo
+                    <input type="text" name="title" placeholder="Caminar" required>
+                </label>
+                <label>
+                    Categoria
+                    <input type="text" name="category" placeholder="Actividad fisica" required>
+                </label>
+                <label class="full-width">
+                    Descripcion
+                    <textarea name="description" rows="3" placeholder="Caminar despues de clases o del trabajo" required></textarea>
+                </label>
+                <label>
+                    Tipo de seguimiento
+                    <select name="metric_type">
+                        <option value="quantity">Cantidad</option>
+                        <option value="duration">Duracion</option>
+                        <option value="boolean">Cumplimiento</option>
+                    </select>
+                </label>
+                <label>
+                    Meta diaria
+                    <input type="number" name="target_value" min="1" step="0.1" placeholder="30" required>
+                </label>
+                <label>
+                    Unidad
+                    <input type="text" name="unit" placeholder="minutos, vasos, veces" required>
+                </label>
+                <label>
+                    Frecuencia
+                    <select name="frequency">
+                        <option value="daily">Diaria</option>
+                        <option value="weekly">Semanal</option>
+                    </select>
+                </label>
+                <button type="submit">Guardar habito</button>
+            </form>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <p class="eyebrow">Tus habitos</p>
+                <h3>Seguimiento diario</h3>
+                <p>Cada tarjeta permite registrar progreso, editar la meta o eliminar el habito.</p>
+            </div>
+
+            {% if user.habits %}
+                <div class="habit-list">
+                    {% for habit in user.habits %}
+                        <article class="habit-card">
+                            <div class="habit-header">
+                                <div>
+                                    <div class="chip-row">
+                                        <span class="badge">{{ habit.category }}</span>
+                                        <span class="outline-badge">{{ habit.frequency }}</span>
+                                        {% if habit.is_active %}
+                                            <span class="outline-badge success-outline">activo</span>
+                                        {% else %}
+                                            <span class="outline-badge">pausado</span>
+                                        {% endif %}
+                                    </div>
+                                    <h4>{{ habit.title }}</h4>
+                                    <p>{{ habit.description }}</p>
+                                </div>
+                                <div class="metric-pill">
+                                    <strong>{{ habit.target_value }} {{ habit.unit }}</strong>
+                                    <span>meta</span>
+                                </div>
+                            </div>
+
+                            <div class="progress-block">
+                                <div class="progress-meta">
+                                    <span>Progreso de hoy: {{ habit.completion_percentage() }}%</span>
+                                    <span>Racha: {{ habit.current_streak() }} dias</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <span style="width: {{ habit.completion_percentage() }}%;"></span>
+                                </div>
+                                <div class="micro-stats">
+                                    <span>Promedio semanal: {{ habit.weekly_average() }}%</span>
+                                    <span>Tipo: {{ habit.metric_type }}</span>
+                                </div>
+                            </div>
+
+                            <div class="habit-forms">
+                                <form class="form-grid compact" method="post" action="{{ url_for('web.create_log', habit_id=habit.id) }}">
+                                    <label>
+                                        Fecha
+                                        <input type="date" name="log_date" value="{{ today.isoformat() }}" required>
+                                    </label>
+                                    <label>
+                                        Valor registrado
+                                        <input type="number" name="value" min="0" step="0.1" placeholder="8" required>
+                                    </label>
+                                    <label class="full-width">
+                                        Nota
+                                        <input type="text" name="note" placeholder="Lo hice despues del almuerzo">
+                                    </label>
+                                    <button type="submit">Agregar avance</button>
+                                </form>
+
+                                <form class="form-grid compact edit-box" method="post" action="{{ url_for('web.update_habit', habit_id=habit.id) }}">
+                                    <label>
+                                        Titulo
+                                        <input type="text" name="title" value="{{ habit.title }}" required>
+                                    </label>
+                                    <label>
+                                        Categoria
+                                        <input type="text" name="category" value="{{ habit.category }}" required>
+                                    </label>
+                                    <label class="full-width">
+                                        Descripcion
+                                        <input type="text" name="description" value="{{ habit.description }}" required>
+                                    </label>
+                                    <label>
+                                        Tipo
+                                        <select name="metric_type">
+                                            <option value="quantity" {% if habit.metric_type == 'quantity' %}selected{% endif %}>Cantidad</option>
+                                            <option value="duration" {% if habit.metric_type == 'duration' %}selected{% endif %}>Duracion</option>
+                                            <option value="boolean" {% if habit.metric_type == 'boolean' %}selected{% endif %}>Cumplimiento</option>
+                                        </select>
+                                    </label>
+                                    <label>
+                                        Meta
+                                        <input type="number" name="target_value" value="{{ habit.target_value }}" min="1" step="0.1" required>
+                                    </label>
+                                    <label>
+                                        Unidad
+                                        <input type="text" name="unit" value="{{ habit.unit }}" required>
+                                    </label>
+                                    <label>
+                                        Frecuencia
+                                        <select name="frequency">
+                                            <option value="daily" {% if habit.frequency == 'daily' %}selected{% endif %}>Diaria</option>
+                                            <option value="weekly" {% if habit.frequency == 'weekly' %}selected{% endif %}>Semanal</option>
+                                        </select>
+                                    </label>
+                                    <label class="checkbox-line">
+                                        <input type="checkbox" name="is_active" {% if habit.is_active %}checked{% endif %}>
+                                        Habito activo
+                                    </label>
+                                    <button type="submit">Actualizar habito</button>
+                                </form>
+
+                                <div class="logs-box">
+                                    <h5>Registros recientes</h5>
+                                    {% if habit.recent_logs() %}
+                                        <div class="log-list">
+                                            {% for log in habit.recent_logs() %}
+                                                <div class="log-item">
+                                                    <div>
+                                                        <strong>{{ log.log_date }}</strong>
+                                                        <p>{{ log.value }} {{ habit.unit }}{% if log.note %} | {{ log.note }}{% endif %}</p>
+                                                    </div>
+                                                    <form method="post" action="{{ url_for('web.delete_log', log_id=log.id) }}">
+                                                        <button class="ghost" type="submit">Eliminar</button>
+                                                    </form>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="empty-state">Aun no has registrado avances para este habito.</p>
+                                    {% endif %}
+                                </div>
+
+                                <form method="post" action="{{ url_for('web.delete_habit', habit_id=habit.id) }}">
+                                    <button class="danger" type="submit">Eliminar habito</button>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-shell">
+                    <h4>Tu panel esta listo.</h4>
+                    <p>Crea tu primer habito para empezar a ver progreso, rachas y seguimiento personalizado.</p>
+                </div>
+            {% endif %}
+        </article>
+    </div>
+</section>
+{% endblock %}

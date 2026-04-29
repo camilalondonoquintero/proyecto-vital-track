@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Mi perfil | VitalTrack{% endblock %}
+
+{% block content %}
+<section class="profile-shell">
+    <article class="panel profile-card">
+        <div class="panel-head">
+            <p class="eyebrow">Cuenta personal</p>
+            <h2>{{ user.full_name }}</h2>
+            <p>Actualiza tus datos, tu objetivo y, si quieres, cambia tu contrasena.</p>
+        </div>
+
+        <form class="form-grid" method="post" action="{{ url_for('web.update_profile') }}">
+            <label>
+                Nombre completo
+                <input type="text" name="full_name" value="{{ user.full_name }}" required>
+            </label>
+            <label>
+                Correo electronico
+                <input type="email" name="email" value="{{ user.email }}" required>
+            </label>
+            <label>
+                Edad
+                <input type="number" name="age" value="{{ user.age }}" min="1" required>
+            </label>
+            <label class="full-width">
+                Objetivo de bienestar
+                <input type="text" name="wellness_goal" value="{{ user.wellness_goal }}" required>
+            </label>
+            <label>
+                Nueva contrasena
+                <input type="password" name="new_password" placeholder="Solo si deseas cambiarla">
+            </label>
+            <label>
+                Confirmar contrasena
+                <input type="password" name="confirm_password" placeholder="Repite la nueva contrasena">
+            </label>
+            <button type="submit">Guardar cambios</button>
+        </form>
+    </article>
+
+    <article class="panel danger-panel">
+        <div class="panel-head">
+            <p class="eyebrow">Zona delicada</p>
+            <h3>Eliminar mi cuenta</h3>
+            <p>Esta accion elimina tu perfil, tus habitos y todos tus registros guardados.</p>
+        </div>
+        <form method="post" action="{{ url_for('web.delete_profile') }}">
+            <button class="danger" type="submit">Eliminar cuenta completa</button>
+        </form>
+    </article>
+</section>
+{% endblock %}
