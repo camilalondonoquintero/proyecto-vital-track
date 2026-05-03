@@ -236,5 +236,60 @@
             {% endif %}
         </article>
     </div>
+
+    <aside class="dashboard-side">
+        <article class="panel">
+            <div class="panel-head">
+                <p class="eyebrow">Ejercicios reales</p>
+                <h3>Busca ideas para entrenar</h3>
+                <p>Consulta ejercicios desde la API publica de wger sin usar datos simulados.</p>
+            </div>
+
+            <form class="search-row stacked-search" method="get" action="{{ url_for('web.dashboard') }}">
+                <input
+                    type="text"
+                    name="exercise_query"
+                    value="{{ exercise_query }}"
+                    placeholder="Ejemplo: push up, squat, plank"
+                >
+                <button type="submit">Buscar ejercicios</button>
+            </form>
+
+            {% if exercise_query and exercise_results %}
+                <div class="recommendation-list rich-list">
+                    {% for exercise in exercise_results %}
+                        <article class="recommendation-card">
+                            {% if exercise.image %}
+                                <img class="exercise-image" src="{{ exercise.image }}" alt="{{ exercise.name }}">
+                            {% endif %}
+                            <div class="chip-row">
+                                {% if exercise.category %}
+                                    <span class="badge">{{ exercise.category }}</span>
+                                {% endif %}
+                                {% if exercise.language %}
+                                    <span class="outline-badge">{{ exercise.language }}</span>
+                                {% endif %}
+                            </div>
+                            <h4>{{ exercise.name }}</h4>
+                            <p>{{ exercise.description or "Sin descripcion disponible." }}</p>
+                            {% if exercise.muscles %}
+                                <small>Musculos principales: {{ exercise.muscles|join(', ') }}</small>
+                            {% endif %}
+                            {% if exercise.secondary_muscles %}
+                                <small>Musculos secundarios: {{ exercise.secondary_muscles|join(', ') }}</small>
+                            {% endif %}
+                            {% if exercise.equipment %}
+                                <small>Equipo: {{ exercise.equipment|join(', ') }}</small>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            {% elif exercise_query %}
+                <p class="empty-state">No encontramos ejercicios para "{{ exercise_query }}". Prueba con otro termino.</p>
+            {% else %}
+                <p class="search-helper">Busca por nombre en ingles o espanol y te mostramos ejercicios con musculos, equipo e imagen cuando la API lo tenga.</p>
+            {% endif %}
+        </article>
+    </aside>
 </section>
 {% endblock %}

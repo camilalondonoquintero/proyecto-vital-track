@@ -3,7 +3,9 @@ from datetime import date
 from flask import (
     Blueprint,
     flash,
+    current_app,
     g,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -14,12 +16,21 @@ from flask import (
 
 from app.extensions import db
 from app.models import Habit, HabitLog
+from app.services.exercise_api_service import ExerciseAPIError, ExerciseRecommendationService
 from app.services.habit_service import HabitService
 from app.services.tips_service import obtener_tip_saludable
 from app.utils import ValidationError, login_required
 
 
 web_bp = Blueprint("web", __name__)
+
+
+def build_exercise_service():
+    return ExerciseRecommendationService(
+        base_url=current_app.config["EXERCISE_API_BASE_URL"],
+        default_language=current_app.config["EXERCISE_DEFAULT_LANGUAGE"],
+        timeout=current_app.config["EXERCISE_API_TIMEOUT"],
+    )
 
 
 def get_owned_habit(habit_id):
@@ -82,14 +93,41 @@ def logout():
 def dashboard():
     summary = HabitService.user_dashboard_summary(g.user)
     tip_saludable = obtener_tip_saludable()
+    exercise_query = request.args.get("exercise_query", "").strip()
+    exercise_results = []
+
+    if exercise_query:
+        try:
+            exercise_results = build_exercise_service().search_exercises(
+                query=exercise_query,
+                limit=6,
+            )
+        except ExerciseAPIError as exc:
+            flash(str(exc), "error")
 
     return render_template(
         "dashboard.html",
         user=g.user,
         summary=summary,
         tip_saludable=tip_saludable,
+        exercise_query=exercise_query,
+        exercise_results=exercise_results,
         today=date.today(),
     )
+
+
+@web_bp.get("/api/exercises")
+@login_required
+def exercise_api():
+    query = request.args.get("q", "").strip()
+    limit = request.args.get("limit", default=6, type=int)
+
+    try:
+        exercises = build_exercise_service().search_exercises(query=query, limit=limit)
+    except ExerciseAPIError as exc:
+        return jsonify({"error": str(exc), "results": []}), 502
+
+    return jsonify({"query": query, "count": len(exercises), "results": exercises})
 
 
 @web_bp.get("/profile")
